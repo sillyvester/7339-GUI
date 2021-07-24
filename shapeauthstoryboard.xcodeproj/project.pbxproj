@@ -15,6 +15,7 @@
 		CB1ADD70269F8B9600AC69ED /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CB1ADD6E269F8B9600AC69ED /* LaunchScreen.storyboard */; };
 		CB1ADD7B269F8B9600AC69ED /* shapeauthstoryboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1ADD7A269F8B9600AC69ED /* shapeauthstoryboardTests.swift */; };
 		CB1ADD86269F8B9600AC69ED /* shapeauthstoryboardUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1ADD85269F8B9600AC69ED /* shapeauthstoryboardUITests.swift */; };
+		CBB7B40526ACB14100400A7F /* ViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBB7B40426ACB14100400A7F /* ViewController2.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		CB1ADD81269F8B9600AC69ED /* shapeauthstoryboardUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = shapeauthstoryboardUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB1ADD85269F8B9600AC69ED /* shapeauthstoryboardUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = shapeauthstoryboardUITests.swift; sourceTree = "<group>"; };
 		CB1ADD87269F8B9600AC69ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CBB7B40426ACB14100400A7F /* ViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController2.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				CB1ADD6C269F8B9600AC69ED /* Assets.xcassets */,
 				CB1ADD6E269F8B9600AC69ED /* LaunchScreen.storyboard */,
 				CB1ADD71269F8B9600AC69ED /* Info.plist */,
+				CBB7B40426ACB14100400A7F /* ViewController2.swift */,
 			);
 			path = shapeauthstoryboard;
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB1ADD68269F8B9300AC69ED /* ViewController.swift in Sources */,
+				CBB7B40526ACB14100400A7F /* ViewController2.swift in Sources */,
 				CB1ADD64269F8B9300AC69ED /* AppDelegate.swift in Sources */,
 				CB1ADD66269F8B9300AC69ED /* SceneDelegate.swift in Sources */,
 			);
