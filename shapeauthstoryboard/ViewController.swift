@@ -6,12 +6,40 @@
 //
 
 import UIKit
+import CoreMotion
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, URLSessionDelegate {
 
     let imgView = UIImageView()
     
+    let SERVER_URL = "http://192.168.1.131:8000"
+    
     let nextScreenButton = UIButton(frame: CGRect(x: 0, y: 0, width: 200, height: 80))
+    
+    let motion = CMMotionManager()
+    
+    var timer = Timer()
+    
+    var acc_x: [Float] = []
+    var acc_y: [Float] = []
+    var acc_z: [Float] = []
+    
+    var ctr:Float = 0
+    
+    lazy var session: URLSession = {
+        let sessionConfig = URLSessionConfiguration.ephemeral
+        
+        sessionConfig.timeoutIntervalForRequest = 5.0
+        sessionConfig.timeoutIntervalForResource = 8.0
+        sessionConfig.httpMaximumConnectionsPerHost = 1
+        
+        
+        return URLSession(configuration: sessionConfig,
+            delegate: self,
+            delegateQueue:self.operationQueue)
+    }()
+    
+    let operationQueue = OperationQueue()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,7 +97,54 @@ class ViewController: UIViewController {
     @objc func buttonDown(sender: UIButton!) {
         print("Button pressed")
         // if we have time we should replace with an actual spinner
-        imgView.image = UIImage(named: "engineering.png")//Assign image to ImageView
+        imgView.image = UIImage(named: "engineering.png")//Assign image to ImageView\
+        
+        self.acc_x = []
+        self.acc_y = []
+        self.acc_z = []
+        
+        self.timer = Timer(fire: Date(), interval: (1.0/5.0), repeats: true, block: { (timer) in
+            
+            if self.acc_x.count < 15 {
+                self.acc_x.append(self.ctr)
+            }
+            
+            if self.acc_y.count < 15 {
+                self.acc_y.append(self.ctr)
+            }
+            
+            if self.acc_z.count < 15 {
+                self.acc_z.append(self.ctr)
+            }
+            
+            self.ctr+=1
+        })
+        
+        RunLoop.current.add(self.timer, forMode: .common)
+        
+        /*if self.motion.isAccelerometerAvailable {
+            print("yo")
+            self.motion.accelerometerUpdateInterval = 1.0 / 60.0  // 60 Hz
+            self.motion.startAccelerometerUpdates()
+
+
+            // Configure a timer to fetch the data.
+            let timer = Timer(fire: Date(), interval: (1.0), repeats: true, block: { (timer) in
+              // Get the accelerometer data.
+                if let data = self.motion.accelerometerData {
+                    let x = data.acceleration.x
+                    let y = data.acceleration.y
+                    let z = data.acceleration.z
+
+                 // Use the accelerometer data in your app.
+                }
+                print("timer fired")
+            
+            })*/
+
+
+           // Add the timer to the current run loop.
+           //RunLoop.current.add(timer!, forMode: .defaultRunLoopMode)
     }
 
     @objc func buttonUp(sender: UIButton!) {
@@ -78,6 +153,12 @@ class ViewController: UIViewController {
 //        imgView.image = UIImage(named: "cancel.png") // If something screwed up
         
         self.view.addSubview(nextScreenButton) // Show the next button
+        self.timer.invalidate()
+        self.ctr = 0
+        
+        print(self.acc_x)
+        
+        self.sendSample(x_data: [5,5,5,5,5], y_data: [5,5,5,5,5], z_data: [5,5,5,5,5], data_label: "Trapezoid")
     }
 
     
@@ -87,5 +168,80 @@ class ViewController: UIViewController {
 //        self.navigationController?.pushViewController(secondViewController, animated: true)
         self.present(secondViewController, animated:true, completion:nil)
     }
+    
+    // Send sample to server
+    func sendSample(x_data: [Float], y_data: [Float], z_data: [Float], data_label: String){
+        let baseURL = "\(SERVER_URL)/DoPostExample"
+        let postUrl = URL(string: "\(baseURL)")
+        
+        // create a custom HTTP POST request
+        var request = URLRequest(url: postUrl!)
+        
+        // data to send in body of post request (send arguments as json)
+        let jsonUpload:NSDictionary = ["x_data":x_data, "y_data":y_data, "z_data":z_data, "label":data_label]
+        
+        
+        let requestBody:Data? = self.convertDictionaryToData(with:jsonUpload)
+        
+        request.httpMethod = "POST"
+        request.httpBody = requestBody
+        
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        
+        let postTask : URLSessionDataTask = self.session.dataTask(with: request,
+                                                                  completionHandler:{
+                        (data, response, error) in
+                        if(error != nil){
+                            if let res = response{
+                                print("Response:\n",res)
+                            }
+                        }
+                        else{ // no error we are aware of
+                            let jsonDictionary = self.convertDataToDictionary(with: data)
+                            
+                            if let labelResponse = jsonDictionary["prediction"]{
+                                print(labelResponse)
+                                //self.displayLabelResponse(labelResponse as! String)
+                            }
+
+                        }
+                                                                    
+        })
+        
+        postTask.resume() // start the task
+    }
+    
+    func convertDictionaryToData(with jsonUpload:NSDictionary) -> Data?{
+        do { // try to make JSON and deal with errors using do/catch block
+            let requestBody = try JSONSerialization.data(withJSONObject: jsonUpload, options:JSONSerialization.WritingOptions.prettyPrinted)
+            return requestBody
+        } catch {
+            print("json error: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    func convertDataToDictionary(with data:Data?)->NSDictionary{
+        do { // try to parse JSON and deal with errors using do/catch block
+            let jsonDictionary: NSDictionary =
+                try JSONSerialization.jsonObject(with: data!,
+                                              options: JSONSerialization.ReadingOptions.mutableContainers) as! NSDictionary
+            
+            return jsonDictionary
+            
+        } catch {
+            
+            if let strData = String(data:data!, encoding:String.Encoding(rawValue: String.Encoding.utf8.rawValue)){
+                            print("printing JSON received as string: "+strData)
+            }else{
+                print("json error: \(error.localizedDescription)")
+            }
+            return NSDictionary() // just return empty
+        }
+    }
+    
+    
 }
 
