@@ -16,13 +16,15 @@ class ViewController: UIViewController, URLSessionDelegate {
     
     let nextScreenButton = UIButton(frame: CGRect(x: 0, y: 0, width: 200, height: 80))
     
+    let changeLabelButton = UIButton(frame: CGRect(x: 0, y: 0, width: 200, height: 80))
+    
     let motion = CMMotionManager()
     
     var timer = Timer()
     
-    var acc_x: [Float] = []
-    var acc_y: [Float] = []
-    var acc_z: [Float] = []
+    var acc_x: [Double] = []
+    var acc_y: [Double] = []
+    var acc_z: [Double] = []
     
     var ctr:Float = 0
     
@@ -76,7 +78,7 @@ class ViewController: UIViewController, URLSessionDelegate {
         let evaluateShapeButton = UIButton(frame: CGRect(x: 0, y: 0, width: 300, height: 80))
         evaluateShapeButton.backgroundColor = .gray
         evaluateShapeButton.setTitle("Press and Perform Motion", for: .normal)
-        evaluateShapeButton.center = CGPoint(x: self.view.center.x, y:700)
+        evaluateShapeButton.center = CGPoint(x: self.view.center.x, y:500)
         evaluateShapeButton.addTarget(self, action: #selector(buttonDown), for: .touchDown)
         evaluateShapeButton.addTarget(self, action: #selector(buttonUp), for: [.touchUpInside, .touchUpOutside])
         self.view.addSubview(evaluateShapeButton)
@@ -103,48 +105,39 @@ class ViewController: UIViewController, URLSessionDelegate {
         self.acc_y = []
         self.acc_z = []
         
-        self.timer = Timer(fire: Date(), interval: (1.0/5.0), repeats: true, block: { (timer) in
-            
-            if self.acc_x.count < 15 {
-                self.acc_x.append(self.ctr)
-            }
-            
-            if self.acc_y.count < 15 {
-                self.acc_y.append(self.ctr)
-            }
-            
-            if self.acc_z.count < 15 {
-                self.acc_z.append(self.ctr)
-            }
-            
-            self.ctr+=1
-        })
-        
-        RunLoop.current.add(self.timer, forMode: .common)
-        
-        /*if self.motion.isAccelerometerAvailable {
-            print("yo")
+        if self.motion.isAccelerometerAvailable {
             self.motion.accelerometerUpdateInterval = 1.0 / 60.0  // 60 Hz
             self.motion.startAccelerometerUpdates()
 
 
             // Configure a timer to fetch the data.
-            let timer = Timer(fire: Date(), interval: (1.0), repeats: true, block: { (timer) in
+            
+            let sensor_timer = Timer(fire: Date(), interval: (1.0/10), repeats: true, block: { (sensor_timer) in
               // Get the accelerometer data.
                 if let data = self.motion.accelerometerData {
                     let x = data.acceleration.x
                     let y = data.acceleration.y
                     let z = data.acceleration.z
+                    
+                    self.acc_x.append(x)
+                    self.acc_y.append(y)
+                    self.acc_z.append(z)
 
                  // Use the accelerometer data in your app.
                 }
-                print("timer fired")
+                
+                if self.acc_x.count == 30{
+                    print("done")
+                    sensor_timer.invalidate()
+                }
+
             
-            })*/
+            })
+            
+            RunLoop.current.add(sensor_timer, forMode: .common)
+            
+        }
 
-
-           // Add the timer to the current run loop.
-           //RunLoop.current.add(timer!, forMode: .defaultRunLoopMode)
     }
 
     @objc func buttonUp(sender: UIButton!) {
@@ -156,9 +149,10 @@ class ViewController: UIViewController, URLSessionDelegate {
         self.timer.invalidate()
         self.ctr = 0
         
-        print(self.acc_x)
+        print(self.acc_x.count)
         
         self.sendSample(x_data: [5,5,5,5,5], y_data: [5,5,5,5,5], z_data: [5,5,5,5,5], data_label: "Trapezoid")
+        //self.predictOne(x_data: [5,5,5,5,5], y_data: [5,5,5,5,5], z_data: [5,5,5,5,5])
     }
 
     
@@ -201,13 +195,57 @@ class ViewController: UIViewController, URLSessionDelegate {
                         else{ // no error we are aware of
                             let jsonDictionary = self.convertDataToDictionary(with: data)
                             
+                            
                             if let labelResponse = jsonDictionary["prediction"]{
                                 print(labelResponse)
                                 //self.displayLabelResponse(labelResponse as! String)
                             }
 
                         }
-                                                                    
+        })
+        
+        postTask.resume() // start the task
+    }
+    
+    // Get Prediction
+    func predictOne(x_data: [Float], y_data: [Float], z_data: [Float]){
+        let baseURL = "\(SERVER_URL)/PredictOne"
+        let postUrl = URL(string: "\(baseURL)")
+        
+        // create a custom HTTP POST request
+        var request = URLRequest(url: postUrl!)
+        
+        // data to send in body of post request (send arguments as json)
+        let jsonUpload:NSDictionary = ["x_data":x_data, "y_data":y_data, "z_data":z_data]
+        
+        
+        let requestBody:Data? = self.convertDictionaryToData(with:jsonUpload)
+        
+        request.httpMethod = "POST"
+        request.httpBody = requestBody
+        
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        
+        let postTask : URLSessionDataTask = self.session.dataTask(with: request,
+                                                                  completionHandler:{
+                        (data, response, error) in
+                        if(error != nil){
+                            if let res = response{
+                                print("Response:\n",res)
+                            }
+                        }
+                        else{ // no error we are aware of
+                            let jsonDictionary = self.convertDataToDictionary(with: data)
+                            
+                            
+                            if let labelResponse = jsonDictionary["prediction"]{
+                                print(labelResponse)
+                                //self.displayLabelResponse(labelResponse as! String)
+                            }
+
+                        }
         })
         
         postTask.resume() // start the task
