@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreMotion
+import CoreML
 
 class ViewController: UIViewController, URLSessionDelegate {
 
@@ -112,7 +113,7 @@ class ViewController: UIViewController, URLSessionDelegate {
 
             // Configure a timer to fetch the data.
             
-            let sensor_timer = Timer(fire: Date(), interval: (1.0/10), repeats: true, block: { (sensor_timer) in
+            let sensor_timer = Timer(fire: Date(), interval: (1.0/30), repeats: true, block: { (sensor_timer) in
               // Get the accelerometer data.
                 if let data = self.motion.accelerometerData {
                     let x = data.acceleration.x
@@ -126,7 +127,7 @@ class ViewController: UIViewController, URLSessionDelegate {
                  // Use the accelerometer data in your app.
                 }
                 
-                if self.acc_x.count == 30{
+                if self.acc_x.count == 90{
                     print("done")
                     sensor_timer.invalidate()
                 }
@@ -149,10 +150,17 @@ class ViewController: UIViewController, URLSessionDelegate {
         self.timer.invalidate()
         self.ctr = 0
         
-        print(self.acc_x.count)
+        var sensors:[Double] = []
         
-        self.sendSample(x_data: [5,5,5,5,5], y_data: [5,5,5,5,5], z_data: [5,5,5,5,5], data_label: "Trapezoid")
-        //self.predictOne(x_data: [5,5,5,5,5], y_data: [5,5,5,5,5], z_data: [5,5,5,5,5])
+        for sensor in [self.acc_x, self.acc_y, self.acc_z]{
+            sensors.append(mean(with: sensor))
+            sensors.append(standard_deviation(with: sensor, mean: mean(with: sensor)))
+        }
+    
+        
+        //self.sendSample(sensor_data: [-0.07, 1.416, -0.69, 0.17, -0.799, 0.264], data_label: "Vertical")
+        //self.sendSample(sensor_data: sensors, data_label: "Horizontal")
+        self.predictOne(sensor_data: sensors)
     }
 
     
@@ -164,7 +172,7 @@ class ViewController: UIViewController, URLSessionDelegate {
     }
     
     // Send sample to server
-    func sendSample(x_data: [Float], y_data: [Float], z_data: [Float], data_label: String){
+    func sendSample(sensor_data:[Double], data_label: String){
         let baseURL = "\(SERVER_URL)/DoPostExample"
         let postUrl = URL(string: "\(baseURL)")
         
@@ -172,7 +180,7 @@ class ViewController: UIViewController, URLSessionDelegate {
         var request = URLRequest(url: postUrl!)
         
         // data to send in body of post request (send arguments as json)
-        let jsonUpload:NSDictionary = ["x_data":x_data, "y_data":y_data, "z_data":z_data, "label":data_label]
+        let jsonUpload:NSDictionary = ["sensor_data":sensor_data, "label":data_label]
         
         
         let requestBody:Data? = self.convertDictionaryToData(with:jsonUpload)
@@ -208,7 +216,7 @@ class ViewController: UIViewController, URLSessionDelegate {
     }
     
     // Get Prediction
-    func predictOne(x_data: [Float], y_data: [Float], z_data: [Float]){
+    func predictOne(sensor_data:[Double]){
         let baseURL = "\(SERVER_URL)/PredictOne"
         let postUrl = URL(string: "\(baseURL)")
         
@@ -216,7 +224,7 @@ class ViewController: UIViewController, URLSessionDelegate {
         var request = URLRequest(url: postUrl!)
         
         // data to send in body of post request (send arguments as json)
-        let jsonUpload:NSDictionary = ["x_data":x_data, "y_data":y_data, "z_data":z_data]
+        let jsonUpload:NSDictionary = ["sensor_data":sensor_data]
         
         
         let requestBody:Data? = self.convertDictionaryToData(with:jsonUpload)
@@ -259,6 +267,20 @@ class ViewController: UIViewController, URLSessionDelegate {
             print("json error: \(error.localizedDescription)")
             return nil
         }
+    }
+    
+    func standard_deviation(with arr:[Double], mean:Double)->Double {
+        var sse:Double = 0
+        for val in arr{
+            sse += pow(abs(val-mean),2)
+        }
+        sse = sse/Double(arr.count)
+        sse = sse.squareRoot()
+        return(sse)
+    }
+    
+    func mean(with arr:[Double])->Double{
+        return(arr.reduce(0, +)/Double(arr.count))
     }
     
     func convertDataToDictionary(with data:Data?)->NSDictionary{
