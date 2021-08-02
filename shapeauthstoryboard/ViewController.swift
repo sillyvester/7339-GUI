@@ -21,6 +21,8 @@ class ViewController: UIViewController, URLSessionDelegate {
     
     let motion = CMMotionManager()
     
+    let model = security_classifier();
+    
     var timer = Timer()
     
     var acc_x: [Double] = []
@@ -79,7 +81,7 @@ class ViewController: UIViewController, URLSessionDelegate {
         let evaluateShapeButton = UIButton(frame: CGRect(x: 0, y: 0, width: 300, height: 80))
         evaluateShapeButton.backgroundColor = .gray
         evaluateShapeButton.setTitle("Press and Perform Motion", for: .normal)
-        evaluateShapeButton.center = CGPoint(x: self.view.center.x, y:500)
+        evaluateShapeButton.center = CGPoint(x: self.view.center.x, y:700)
         evaluateShapeButton.addTarget(self, action: #selector(buttonDown), for: .touchDown)
         evaluateShapeButton.addTarget(self, action: #selector(buttonUp), for: [.touchUpInside, .touchUpOutside])
         self.view.addSubview(evaluateShapeButton)
@@ -98,7 +100,7 @@ class ViewController: UIViewController, URLSessionDelegate {
     
 
     @objc func buttonDown(sender: UIButton!) {
-        print("Button pressed")
+        //print("Button pressed")
         // if we have time we should replace with an actual spinner
         imgView.image = UIImage(named: "engineering.png")//Assign image to ImageView\
         
@@ -128,7 +130,7 @@ class ViewController: UIViewController, URLSessionDelegate {
                 }
                 
                 if self.acc_x.count == 90{
-                    print("done")
+                    //print("done")
                     sensor_timer.invalidate()
                 }
 
@@ -142,8 +144,7 @@ class ViewController: UIViewController, URLSessionDelegate {
     }
 
     @objc func buttonUp(sender: UIButton!) {
-        print("Button pressed")
-        imgView.image = UIImage(named: "check.png") // If the shape was recorded
+        //print("Button pressed")
 //        imgView.image = UIImage(named: "cancel.png") // If something screwed up
         
         self.view.addSubview(nextScreenButton) // Show the next button
@@ -160,7 +161,17 @@ class ViewController: UIViewController, URLSessionDelegate {
         
         //self.sendSample(sensor_data: [-0.07, 1.416, -0.69, 0.17, -0.799, 0.264], data_label: "Vertical")
         //self.sendSample(sensor_data: sensors, data_label: "Horizontal")
-        self.predictOne(sensor_data: sensors)
+        let prediction = self.predictOneLocal(sensor_data: sensors)
+        
+        if prediction == "Horizontal"{
+            imgView.image = UIImage(named: "Horiz.png")
+        }
+        
+        if prediction == "Vertical"{
+            imgView.image = UIImage(named: "Vert.png")
+        }
+         // If the shape was recorded
+        //self.predictOne(sensor_data: [-0.07, 1.416, -0.69, 0.17, -0.799, 0.264])
     }
 
     
@@ -215,8 +226,28 @@ class ViewController: UIViewController, URLSessionDelegate {
         postTask.resume() // start the task
     }
     
+    // Predict From Local Model
+    func predictOneLocal(sensor_data:[Double])->String{
+        
+        let modelInput = security_classifierInput(X_Mean: sensor_data[0],
+                                             X_STD: sensor_data[1],
+                                             Y_Mean: sensor_data[2],
+                                             Y_STD: sensor_data[3],
+                                             Z_Mean: sensor_data[4],
+                                             Z_STD: sensor_data[5])
+        guard let modelOutput = try? model.prediction(input: modelInput) else {
+            fatalError("Error calling predict")
+        }
+        
+        return(modelOutput.Label)
+        
+    }
+    
     // Get Prediction
-    func predictOne(sensor_data:[Double]){
+    func predictOneServer(sensor_data:[Double]){
+        
+        /// OLD CODE TO CALL FROM SERVER
+        
         let baseURL = "\(SERVER_URL)/PredictOne"
         let postUrl = URL(string: "\(baseURL)")
         

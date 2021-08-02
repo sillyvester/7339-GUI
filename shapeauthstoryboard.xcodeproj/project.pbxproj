@@ -16,6 +16,7 @@
 		CB1ADD7B269F8B9600AC69ED /* shapeauthstoryboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1ADD7A269F8B9600AC69ED /* shapeauthstoryboardTests.swift */; };
 		CB1ADD86269F8B9600AC69ED /* shapeauthstoryboardUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1ADD85269F8B9600AC69ED /* shapeauthstoryboardUITests.swift */; };
 		CBB7B40526ACB14100400A7F /* ViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBB7B40426ACB14100400A7F /* ViewController2.swift */; };
+		E81B47F526B86E0000D1D8D3 /* security_classifier.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = E81B47F426B86E0000D1D8D3 /* security_classifier.mlmodel */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		CB1ADD85269F8B9600AC69ED /* shapeauthstoryboardUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = shapeauthstoryboardUITests.swift; sourceTree = "<group>"; };
 		CB1ADD87269F8B9600AC69ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CBB7B40426ACB14100400A7F /* ViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController2.swift; sourceTree = "<group>"; };
+		E81B47F426B86E0000D1D8D3 /* security_classifier.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = security_classifier.mlmodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +106,7 @@
 				CB1ADD63269F8B9300AC69ED /* AppDelegate.swift */,
 				CB1ADD65269F8B9300AC69ED /* SceneDelegate.swift */,
 				CB1ADD67269F8B9300AC69ED /* ViewController.swift */,
+				E81B47F426B86E0000D1D8D3 /* security_classifier.mlmodel */,
 				CB1ADD69269F8B9300AC69ED /* Main.storyboard */,
 				CB1ADD6C269F8B9600AC69ED /* Assets.xcassets */,
 				CB1ADD6E269F8B9600AC69ED /* LaunchScreen.storyboard */,
@@ -265,6 +268,7 @@
 				CBB7B40526ACB14100400A7F /* ViewController2.swift in Sources */,
 				CB1ADD64269F8B9300AC69ED /* AppDelegate.swift in Sources */,
 				CB1ADD66269F8B9300AC69ED /* SceneDelegate.swift in Sources */,
+				E81B47F526B86E0000D1D8D3 /* security_classifier.mlmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -441,12 +445,17 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = FD7K8L5U3W;
 				INFOPLIST_FILE = shapeauthstoryboard/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/shapeauthstoryboard",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = shapeauthenticator.shapeauthstoryboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -461,12 +470,17 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = FD7K8L5U3W;
 				INFOPLIST_FILE = shapeauthstoryboard/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/shapeauthstoryboard",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = shapeauthenticator.shapeauthstoryboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
